@@ -23,14 +23,40 @@ protocol TranscriptionServiceProtocol {
 }
 
 // MARK: - Local Apple Speech Recognizer
+/// `AppleSpeechRecognizerService`
+///
+/// This actor implements the `TranscriptionServiceProtocol` using the built-in Apple `SFSpeechRecognizer`.
+/// It requests authorization for speech recognition and then does the transcription on the local audio
+/// using `SFSpeechURLRecognitionRequest`.
+///
+/// - The actor is initialized with an optional `onError` closure that is called
+///   if speech recognition authorization fails or is denied. This way the UI
+///   can display a user-friendly alert.
+///
+/// - The `transcribeAudioFile(url:)` function asynchronously transcribes the audio
+///   file at the URL. It wraps the task in a `withCheckedThrowingContinuation` as to
+///   use Swift's structured concurrency
+///
+/// Example usage:
+/// ```swift
+/// let service = AppleSpeechRecognizerService(onError: { appError in
+///     // Handle permission errors immediately
+/// })
+/// let text = try await service.transcribeAudioFile(url: audioFileURL)
+/// ```
+///
 actor AppleSpeechRecognizerService: TranscriptionServiceProtocol {
-	init() {
+	private let onError: ((AppError) -> Void)?
+
+	init(onError: ((AppError) -> Void)? = nil) {
+		self.onError = onError
 		SFSpeechRecognizer.requestAuthorization { status in
 			switch status {
 				case .authorized:
 					logger.debug("Speech recognition authorized.")
 				default:
-					logger.error("Speech not authorized: \(status.rawValue, privacy: .public)")
+					let err = AppError(domain: "SpeechRecognizer", code: Int(status.rawValue), message: "Speech recognition not authorized: \(status.rawValue)")
+					onError?(err)
 			}
 		}
 	}
@@ -62,9 +88,27 @@ actor AppleSpeechRecognizerService: TranscriptionServiceProtocol {
 }
 
 // MARK: - Remote OpenAI Whisper Service
+/// `OpenAITranscriptionService`
+///
+/// This actor implements the `TranscriptionServiceProtocol` by sending audio files
+/// to the remote transcription endpointOpenAI Whisper. It handles retrying failed requests and
+/// makes sure that requests are performed asynchronously via Swift Concurrency.
+///
+/// - The actor is initialized with a custom `URLSession`
+///
+/// - The `transcribeAudioFile(url:)` function uploads the audio file using a
+///   multipart/form-data POST request, and decodes the resulting transcription text
+///   from the server. It retries failed attempts with increasing delays.
+///
+/// Example usage:
+/// ```swift
+/// let service = OpenAITranscriptionService()
+/// let text = try await service.transcribeAudioFile(url: audioFileURL)
+/// ```
+///
 actor OpenAITranscriptionService: TranscriptionServiceProtocol {
 	private let session: URLSession
-	private let maxRetries = 5
+	private let maxRetries = 3
 	private let initialDelay: TimeInterval = 2
 
 	init() {
@@ -88,35 +132,51 @@ actor OpenAITranscriptionService: TranscriptionServiceProtocol {
 					logger.error("Max retries reached. Could not transcribe file: \(url.lastPathComponent, privacy: .public)")
 					throw error
 				}
-				logger.warning("Attempt \(attempt) failed for \(url.lastPathComponent, privacy: .public), retrying in \(delay, privacy: .public)s...")
-				try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+
+				// Add jitter: randomize delay slightly to avoid synchronized retries
+				let jitter = Double.random(in: 0.8...1.2)
+				let actualDelay = min(delay * jitter, 60)
+				logger.warning("Attempt \(attempt) failed for \(url.lastPathComponent, privacy: .public), retrying in \(String(format: "%.2f", actualDelay))s...")
+
+				try await Task.sleep(nanoseconds: UInt64(actualDelay * 1_000_000_000))
 				delay *= 2
 			}
 		}
 		throw URLError(.cannotConnectToHost)
 	}
-
+	
 	private func uploadFile(fileURL: URL) async throws -> String {
-		let endpoint = URL(string: "https://your-transcription-api.com/transcribe")!
+		guard let keyData = KeychainHelper.shared.read(service: "com.myapp.openai", account: "apiKey"),
+			  let openAIApiKey = String(data: keyData, encoding: .utf8),
+			  !openAIApiKey.isEmpty else {
+			let error = NSError(
+				domain: "OpenAIKeychain",
+				code: -1,
+				userInfo: [NSLocalizedDescriptionKey: "OpenAI API key not found in Keychain. Please set it in Settings."]
+			)
+			throw error
+		}
+
+		let endpoint = URL(string: "https://api.openai.com/v1/audio/transcriptions")!
 		var request = URLRequest(url: endpoint)
 		request.httpMethod = "POST"
 		let boundary = UUID().uuidString
 		request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-		request.setValue("Bearer YOUR_API_KEY", forHTTPHeaderField: "Authorization")
+		request.setValue("Bearer \(openAIApiKey)", forHTTPHeaderField: "Authorization")
 
 		let httpBody = try createMultipartBody(fileURL: fileURL, boundary: boundary)
 		request.httpBody = httpBody
 
-		logger.debug("Uploading file: \(fileURL.lastPathComponent, privacy: .public) to remote transcription service.")
+		logger.debug("Uploading file to OpenAI Whisper endpoint: \(fileURL.lastPathComponent, privacy: .public)")
 
 		let (data, response) = try await session.data(for: request)
 		guard let httpResp = response as? HTTPURLResponse, (200...299).contains(httpResp.statusCode) else {
-			logger.error("Bad server response during transcription upload.")
+			logger.error("OpenAI Whisper returned bad status: \(response)")
 			throw URLError(.badServerResponse)
 		}
 
 		let transcription = try parseTranscriptionResponse(data: data)
-		logger.debug("Remote transcription complete: \(transcription, privacy: .public)")
+		logger.debug("OpenAI Whisper transcription complete: \(transcription, privacy: .public)")
 		return transcription
 	}
 
@@ -130,6 +190,12 @@ actor OpenAITranscriptionService: TranscriptionServiceProtocol {
 		body.append("Content-Type: audio/wav\r\n\r\n".data(using: .utf8)!)
 		body.append(data)
 		body.append("\r\n".data(using: .utf8)!)
+
+		// Add the `model` field
+		body.append("--\(boundary)\r\n".data(using: .utf8)!)
+		body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n".data(using: .utf8)!)
+		body.append("whisper-1\r\n".data(using: .utf8)!)
+
 		body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 		return body
 	}
