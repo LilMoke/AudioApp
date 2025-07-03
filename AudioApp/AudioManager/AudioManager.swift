@@ -98,6 +98,18 @@ class AudioManager {
 
 // MARK: - Recording Control
 extension AudioManager {
+	/// Starts a new audio recording session.
+	///
+	/// This function:
+	/// - Configures the AVAudioSession for recording.
+	/// - Creates and inserts a new `RecordingSession` into the SwiftData ModelContext.
+	/// - Sets up an audio tap on the input node to capture microphone data
+	/// - Trys to start the `AVAudioEngine`.
+	///
+	/// If the engine fails to start, it logs the error and triggers the `onError` callback
+	/// to show an alert to the user.
+	///
+	/// Call this function from the UI when you want to start a new recording.
 	func startRecording() {
 		configureSession()
 
@@ -125,6 +137,16 @@ extension AudioManager {
 		}
 	}
 
+	/// Gathers the audio data and writes segments to disk when the bufferDuration is met.
+	///
+	/// Appends incoming `AVAudioPCMBuffer` data to the segmentBuffers array.
+	/// Once the total is >= `segmentDuration` it writes the current segment to disk
+	/// and resets the  timer, and clears the buffers to start collecting another segment.
+	///
+	/// - Parameters:
+	///   - buffer: The audio data to save.
+	///   - time: The time the data started toi be collected, used to track the time the segment statretd.
+	///
 	private func accumulateSegment(buffer: AVAudioPCMBuffer, time: AVAudioTime) {
 		if segmentStartTime == nil {
 			segmentStartTime = time
@@ -143,6 +165,12 @@ extension AudioManager {
 		}
 	}
 
+	/// Stops the audio recording session.
+	///
+	/// Removes the tap and stops the `AVAudioEngine`.
+	/// Writes remaining audio data to disk
+	/// clears buffer and resets time
+	///
 	func stopRecording() {
 		audioEngine.inputNode.removeTap(onBus: 0)
 		audioEngine.stop()
@@ -154,12 +182,18 @@ extension AudioManager {
 		segmentStartTime = nil
 	}
 
+	/// Pauses the audio engine but does not remove the tap in case it is stared again,
+	/// temporarily halts capture and marks `isRecording` false
+	///
 	func pauseRecording() {
 		audioEngine.pause()
 		isRecording = false
 		logger.info("Recording paused.")
 	}
 
+	/// Trys to resume(start) the engine after being paused and
+	/// sets `isRecording` to true
+	///
 	func resumeRecording() {
 		do {
 			try audioEngine.start()
@@ -170,6 +204,13 @@ extension AudioManager {
 		}
 	}
 
+	/// Calculates the input level for UI
+	///
+	/// Computes the RMS and power DB from the `AVAudioPCMBuffer` and
+	/// updates `inputLevel` on the main thread with a normalized value between
+	/// 0 and 1 for waveform.
+	///
+	/// - Parameter buffer: Buffer containing PCM data to analyze
 	private func calculateInputLevel(buffer: AVAudioPCMBuffer) {
 		guard let channelData = buffer.floatChannelData?[0] else { return }
 		let channelDataValueArray = stride(
@@ -188,6 +229,13 @@ extension AudioManager {
 		}
 	}
 
+	/// Writes the audio buffer to disk as a  audio file.
+	///
+	/// Puts the current `segmentBuffers` into an `AVAudioFile` and saves it to the
+	/// documents directory or a temporary directory depending on the `keepAudioClips`
+	/// setting. Makes a unique filename for each segment.
+	/// After writing calls `saveSegmentInSwiftData` to keep track of it in the SwiftData model.
+	///
 	private func writeCurrentSegmentToDisk() {
 		guard !segmentBuffers.isEmpty else { return }
 
@@ -211,6 +259,17 @@ extension AudioManager {
 		}
 	}
 
+	/// Save a `AudioSegment` in the SwiftData model and starts transcription.
+	///
+	/// Creates an `AudioSegment` object with the given file `url` and `duration`,
+	/// inserts it into the current SwiftData `context`, and appends it to the
+	/// `currentSession` segments list.
+	///
+	/// After saving, it trys to start an asynchronous task to transcribe it
+	///
+	/// - Parameters:
+	///   - url: The file URL where the audio segment was saved
+	///   - duration: The length of the audio segment in seconds
 	private func saveSegmentInSwiftData(url: URL, duration: Double) {
 		let segment = AudioSegment(fileURL: url, duration: duration)
 		context.insert(segment)
@@ -228,6 +287,17 @@ extension AudioManager {
 		}
 	}
 
+	/// Transcribes a segment and updates the model data for it
+	///
+	/// Gets the `AudioSegment` by its `UUID` from the SwiftData context,
+	/// sends the audio file to a `TranscriptionServiceProtocol` for transcription,
+	/// and updates the segment with the returned text. Marks it as uploaded
+	/// and attempts to save it
+	///
+	/// If the user preference `keepAudioClips` is off, deletes the audio file
+	/// from disk after it is transcribed
+	///
+	/// - Parameter segmentID: Identifier of the `AudioSegment` to transcribe
 	private func transcribeSegment(segmentID: UUID) async {
 		let service: TranscriptionServiceProtocol = AppleSpeechRecognizerService()
 		let keepAudioClips = UserDefaults.standard.bool(forKey: "keepAudioClips")
@@ -254,6 +324,13 @@ extension AudioManager {
 
 // MARK: - Audio Session
 extension AudioManager {
+	/// Configures the `AVAudioSession` to record and play
+	///
+	/// Sets the audio session with `.playAndRecord` for input and output also enables
+	/// speaker playback with Bluetooth support.  It also activates the session
+	/// with `.notifyOthersOnDeactivation` to handle audio interruptions gracefully as
+	/// per requirement
+	///
 	private func configureSession() {
 		do {
 			try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
@@ -266,6 +343,11 @@ extension AudioManager {
 
 // MARK: - Notifications
 extension AudioManager {
+	/// Sets up notifications for the route changes and any interruptions
+	///
+	/// Registers observers for `AVAudioSession.routeChangeNotification` and
+	/// `AVAudioSession.interruptionNotification` to handle the cases like
+	/// headphones being plugged or unplugged or phone calls interrupting audio
 	private func setupNotifications() {
 		NotificationCenter.default.addObserver(
 			self,
@@ -282,6 +364,10 @@ extension AudioManager {
 		)
 	}
 
+	/// Handles changes to the audio route like headphones being plugged and unplugged
+	///
+	/// Called automatically by the NotificationCenter. If a device like headphones is unplugged while
+	/// recording it restarts the engine to keep consistent input/output
 	@objc private func handleRouteChange(notification: Notification) {
 		guard let userInfo = notification.userInfo,
 			  let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
@@ -302,6 +388,11 @@ extension AudioManager {
 		}
 	}
 
+	/// Handles interruptions to the session like a phone call or Siri
+	///
+	/// If an interruption happens while recording it stops recording
+	/// When the interruption stops it checks if the session should resume automatically
+	/// and restarts recording
 	@objc private func handleInterruption(notification: Notification) {
 		guard let userInfo = notification.userInfo,
 			  let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
@@ -323,6 +414,9 @@ extension AudioManager {
 		}
 	}
 
+	/// Stops and Starts the engine to restart it
+	///
+	/// Called after a route change like unplugging headphones, etc.
 	private func restartAudioEngine() {
 		stopRecording()
 		startRecording()
