@@ -30,7 +30,11 @@ struct ContentView: View {
 					} label: {
 						VStack(alignment: .leading) {
 							Text("Session")
-							Text(session.date.formatted()).font(.caption)
+								.accessibilityLabel("Recording Session")
+							Text(session.date.formatted())
+								.font(.caption)
+								.accessibilityLabel("Date")
+								.accessibilityValue(session.date.formatted(date: .abbreviated, time: .shortened))
 						}
 					}
 					.swipeActions(edge: .trailing) {
@@ -39,6 +43,7 @@ struct ContentView: View {
 						} label: {
 							Label("Delete", systemImage: "trash")
 						}
+						.accessibilityLabel("Delete session recorded on \(session.date.formatted(date: .abbreviated, time: .shortened))")
 					}
 				}
 			}
@@ -54,6 +59,8 @@ struct ContentView: View {
 						showRecordingSheet = true
 						logger.info("🎙️ Start Recording tapped.")
 					}
+					.accessibilityLabel("Start new recording")
+					.accessibilityHint("Opens the recording screen to start recording audio.")
 				}
 				ToolbarItem(placement: .navigationBarTrailing) {
 					NavigationLink {
@@ -61,6 +68,8 @@ struct ContentView: View {
 					} label: {
 						Image(systemName: "gear")
 					}
+					.accessibilityLabel("Settings")
+					.accessibilityHint("Open the application settings.")
 				}
 			}
 		}
@@ -81,7 +90,7 @@ struct ContentView: View {
 									try context.save()
 									logger.info("Recording session deleted from model context.")
 								} catch {
-									logger.error("Failed to save after deleting session: \(error.localizedDescription, privacy: .public)")
+									logger.error("Failed to save after deleting session: \(error.localizedDescription)")
 								}
 							}
 							audioManager = nil
@@ -110,6 +119,7 @@ struct ContentView: View {
 				audioManager = nil
 				logger.info("Discarded current recording session via alert.")
 			}
+			.accessibilityLabel("Discard recording")
 			Button("Cancel", role: .cancel) {
 				logger.info("Discard alert cancelled.")
 			}
@@ -124,7 +134,7 @@ struct ContentView: View {
 			try context.save()
 			logger.info("Deleted existing recording session.")
 		} catch {
-			logger.error("Failed to save context after deleting session: \(error.localizedDescription, privacy: .public)")
+			logger.error("Failed to save context after deleting session: \(error.localizedDescription)")
 		}
 	}
 }

@@ -24,8 +24,9 @@ struct SettingsView: View {
 	@AppStorage("audioFormat") private var audioFormat: String = "caf"
 	@AppStorage("transcriptionMode") private var transcriptionModeRaw: String = TranscriptionMode.apple.rawValue
 
-	@State private var openAIApiKey: String = ""
 	@FocusState private var apiKeyFocused: Bool
+
+	@State private var openAIApiKey: String = ""
 	@State private var showMissingKeyAlert = false
 
 	var transcriptionMode: TranscriptionMode {
@@ -35,10 +36,12 @@ struct SettingsView: View {
 
 	var body: some View {
 		Form {
-			Section(header: Text("Transcription Settings")) {
+			Section(header: Text("Transcription Settings").accessibilityAddTraits(.isHeader)) {
 				Picker("", selection: $transcriptionModeRaw) {
 					ForEach(TranscriptionMode.allCases) { mode in
-						Text(mode.rawValue).tag(mode.rawValue)
+						Text(mode.rawValue)
+							.tag(mode.rawValue)
+							.accessibilityLabel(mode.rawValue)
 					}
 				}
 				.pickerStyle(.inline)
@@ -46,6 +49,8 @@ struct SettingsView: View {
 
 				if transcriptionMode == .openai {
 					SecureField("OpenAI API Key", text: $openAIApiKey)
+						.accessibilityLabel("OpenAI API Key")
+						.accessibilityHint("Enter your OpenAI Whisper API key required for transcription.")
 						.focused($apiKeyFocused)
 						.onChange(of: openAIApiKey) { _, newValue in
 							KeychainHelper.shared.save(Data(newValue.utf8), service: "com.myapp.openai", account: "apiKey")
@@ -59,16 +64,40 @@ struct SettingsView: View {
 				}
 			}
 
-			Section(header: Text("Audio Settings")) {
+			Section(header: Text("Audio Settings").accessibilityAddTraits(.isHeader)) {
 				Toggle("Keep Audio Clips", isOn: $keepAudioClips)
-				Stepper("Segment Length: \(Int(segmentLength)) sec", value: $segmentLength, in: 10...120, step: 10)
+					.accessibilityLabel("Keep Audio Clips toggle")
+					.accessibilityHint("Keeps audio files saved after transcription")
+
+				Stepper("Segment Length: \(Int(segmentLength)) seconds", value: $segmentLength, in: 10...120, step: 10)
+					.accessibilityLabel("Segment Length")
+					.accessibilityValue("\(Int(segmentLength)) seconds")
+					.accessibilityHint("Adjust length of each recorded segment.")
+
 				Stepper("Sample Rate: \(Int(sampleRate)) Hz", value: $sampleRate, in: 8000...48000, step: 1000)
+					.accessibilityLabel("Sample Rate")
+					.accessibilityValue("\(Int(sampleRate)) Hertz")
+					.accessibilityHint("Adjust audio sample rate.")
+
 				Picker("Bit Depth", selection: $bitDepth) {
-					ForEach([8, 16, 24, 32], id: \.self) { Text("\($0) bit") }
+					ForEach([8, 16, 24, 32], id: \.self) {
+						Text("\($0) bit")
+					}
 				}
-				Picker("Format", selection: $audioFormat) {
-					ForEach(["caf", "wav", "m4a"], id: \.self) { Text($0.uppercased()) }
-				}
+				.accessibilityLabel("Bit Depth")
+				.accessibilityValue("\(bitDepth) bits")
+
+				// This was removed because the format for OpenAI Whisper needs to be PCM so the data in a .wav or .caf will be
+				// the same. Ideally we should save the file after transcribing and then convert to the required user format.
+				// However, the feature to save the audio was not part of the requirement, i just wanted to do it. BUT, there was
+				// a requirement to have a configurable format setting but I think it is foolish for the reason descriibed.
+//				Picker("Format", selection: $audioFormat) {
+//					ForEach(["caf", "wav", "m4a"], id: \.self) {
+//						Text($0.uppercased())
+//					}
+//				}
+//				.accessibilityLabel("Audio Format")
+//				.accessibilityValue(audioFormat.uppercased())
 			}
 		}
 		.navigationTitle("Settings")
@@ -84,6 +113,7 @@ struct SettingsView: View {
 				} label: {
 					Label("Back", systemImage: "chevron.left")
 				}
+				.accessibilityLabel("Back to previous screen")
 			}
 		}
 		.alert("API Key Required", isPresented: $showMissingKeyAlert) {

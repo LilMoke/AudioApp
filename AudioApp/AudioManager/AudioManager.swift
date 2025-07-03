@@ -344,50 +344,6 @@ extension AudioManager {
 			onError?(AppError(error: error))
 		}
 	}
-//	private func transcribeSegment(segmentID: UUID) async {
-//		let keepAudioClips = UserDefaults.standard.bool(forKey: "keepAudioClips")
-//
-//		do {
-//			let request = FetchDescriptor<AudioSegment>(predicate: #Predicate { $0.id == segmentID })
-//			guard let segment = try? context.fetch(request).first else {
-//				logger.error("Could not fetch segment for ID \(segmentID)")
-//				return
-//			}
-//
-//			var text: String
-//			do {
-//				let openAIService = OpenAITranscriptionService()
-//				logger.info("Attempting transcription via OpenAI Whisper service.")
-//				text = try await openAIService.transcribeAudioFile(url: segment.fileURL)
-//				logger.info("Transcription via OpenAI succeeded.")
-//			} catch {
-//				logger.warning("OpenAI transcription failed: \(error.localizedDescription). Falling back to Apple Speech.")
-//				do {
-//					let appleService = AppleSpeechRecognizerService(onError: onError)
-//					text = try await appleService.transcribeAudioFile(url: segment.fileURL)
-//					logger.info("Transcription via Apple Speech succeeded.")
-//				} catch {
-//					logger.error("Fallback to Apple Speech also failed: \(error.localizedDescription)")
-//					onError?(AppError(error: error))
-//					return
-//				}
-//			}
-//
-//			segment.transcription = Transcription(text: text)
-//			segment.isUploaded = true
-//			try context.save()
-//			logger.info("Saved transcription: \(text)")
-//
-//			if !keepAudioClips {
-//				try? FileManager.default.removeItem(at: segment.fileURL)
-//				logger.info("Deleted audio file after transcription: \(segment.fileURL.lastPathComponent)")
-//			}
-//
-//		} catch {
-//			logger.error("Failed transcription pipeline: \(error.localizedDescription)")
-//			onError?(AppError(error: error))
-//		}
-//	}
 }
 
 // MARK: - Audio Session

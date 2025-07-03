@@ -26,6 +26,7 @@ struct SessionDetailView: View {
 				Text("No segments yet. Recording in progress or not started.")
 					.font(.footnote)
 					.foregroundColor(.gray)
+					.accessibilityLabel("No segments yet")
 			} else {
 				ForEach(session.segments, id: \.id) { segment in
 					VStack(alignment: .leading, spacing: 8) {
@@ -33,10 +34,11 @@ struct SessionDetailView: View {
 							Text("File: \(segment.fileURL.lastPathComponent)")
 								.font(.subheadline)
 								.foregroundColor(.secondary)
+								.accessibilityLabel("Audio file")
+								.accessibilityValue(segment.fileURL.lastPathComponent)
 
 							Spacer()
 
-							// Only show play/delete if file exists
 							if FileManager.default.fileExists(atPath: segment.fileURL.path) {
 								HStack(spacing: 16) {
 									Button {
@@ -45,8 +47,7 @@ struct SessionDetailView: View {
 										Image(systemName: "play.circle")
 											.font(.title2)
 									}
-									.buttonStyle(.borderless)
-									.contentShape(Rectangle())
+									.accessibilityLabel("Play audio file \(segment.fileURL.lastPathComponent)")
 
 									Button(role: .destructive) {
 										segmentToDeleteFile = segment
@@ -55,8 +56,7 @@ struct SessionDetailView: View {
 										Image(systemName: "trash")
 											.font(.title2)
 									}
-									.buttonStyle(.borderless)
-									.contentShape(Rectangle())
+									.accessibilityLabel("Delete audio file \(segment.fileURL.lastPathComponent)")
 								}
 							}
 						}
@@ -64,14 +64,18 @@ struct SessionDetailView: View {
 						if let transcription = segment.transcription {
 							Text(transcription.text)
 								.font(.body)
+								.accessibilityLabel("Transcription")
+								.accessibilityValue(transcription.text)
 						} else if segment.isUploaded {
 							Text("🚀 Transcribing...")
 								.font(.footnote)
 								.foregroundColor(.blue)
+								.accessibilityLabel("Transcription in progress")
 						} else {
 							Text("⏳ Pending upload")
 								.font(.footnote)
 								.foregroundColor(.orange)
+								.accessibilityLabel("Pending upload")
 						}
 					}
 					.padding(.vertical, 6)
@@ -79,12 +83,14 @@ struct SessionDetailView: View {
 			}
 		}
 		.navigationTitle(session.date.formatted(date: .abbreviated, time: .shortened))
+		.accessibilityLabel("Session details for \(session.date.formatted(date: .abbreviated, time: .shortened))")
 		.alert("Delete Audio File?", isPresented: $showDeleteAlert) {
 			Button("Delete", role: .destructive) {
 				if let segment = segmentToDeleteFile {
 					deleteAudioFile(for: segment)
 				}
 			}
+			.accessibilityLabel("Confirm delete audio file")
 			Button("Cancel", role: .cancel) {}
 		} message: {
 			Text("Are you sure you want to delete the audio file? The transcription will remain.")
@@ -109,8 +115,7 @@ struct SessionDetailView: View {
 			} catch {
 				logger.error("Failed to delete audio file: \(error.localizedDescription, privacy: .public)")
 			}
-		} else {
-			logger.debug("File not found on disk for deletion: \(segment.fileURL.lastPathComponent, privacy: .public)")
 		}
 	}
 }
+

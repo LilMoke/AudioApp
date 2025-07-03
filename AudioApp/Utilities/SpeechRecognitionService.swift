@@ -108,7 +108,7 @@ actor AppleSpeechRecognizerService: TranscriptionServiceProtocol {
 ///
 actor OpenAITranscriptionService: TranscriptionServiceProtocol {
 	private let session: URLSession
-	private let maxRetries = 3
+	private let maxRetries = 5	// Fallback if transcription failed consecutively for 5+ times. This is per requirement.
 	private let initialDelay: TimeInterval = 2
 
 	init() {

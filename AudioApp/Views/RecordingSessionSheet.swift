@@ -16,7 +16,7 @@ struct RecordingSessionSheet: View {
 
 	@Bindable var audioManager: AudioManager
 
-	var onClose: (Bool) -> Void // true = discard confirmed - deletes all segments and session
+	var onClose: (Bool) -> Void
 	var onDone: () -> Void
 
 	@State private var recordingTime: TimeInterval = 0
@@ -30,6 +30,8 @@ struct RecordingSessionSheet: View {
 				Text(timeString(from: recordingTime))
 					.font(.largeTitle.monospacedDigit())
 					.padding(.top)
+					.accessibilityLabel("Recording time")
+					.accessibilityValue("\(Int(recordingTime)) seconds elapsed")
 
 				HStack(spacing: 30) {
 					Button {
@@ -51,10 +53,16 @@ struct RecordingSessionSheet: View {
 					} label: {
 						if !audioManager.isRecording && !isPaused {
 							Label("Start", systemImage: "record.circle")
+								.accessibilityLabel("Start recording")
+								.accessibilityHint("Begins recording audio.")
 						} else if audioManager.isRecording {
 							Label("Pause", systemImage: "pause.circle")
+								.accessibilityLabel("Pause recording")
+								.accessibilityHint("Pauses the current recording.")
 						} else {
 							Label("Resume", systemImage: "play.circle")
+								.accessibilityLabel("Resume recording")
+								.accessibilityHint("Resumes paused recording.")
 						}
 					}
 
@@ -67,24 +75,35 @@ struct RecordingSessionSheet: View {
 						Label("Stop", systemImage: "stop.circle")
 					}
 					.disabled(!audioManager.isRecording && !isPaused)
+					.accessibilityLabel("Stop recording")
+					.accessibilityHint("Stops and saves the current recording session.")
 				}
 				.font(.title2)
 
 				ScrollingWaveform(level: audioManager.inputLevel)
 					.frame(height: 50)
 					.padding(.horizontal)
+					.accessibilityLabel("Audio waveform level")
 
 				List {
 					if let segments = audioManager.currentSession?.segments, !segments.isEmpty {
 						ForEach(segments, id: \.id) { segment in
 							VStack(alignment: .leading) {
-								Text("File: \(segment.fileURL.lastPathComponent)").font(.caption)
+								Text("File: \(segment.fileURL.lastPathComponent)")
+									.font(.caption)
+									.accessibilityLabel("Recorded file")
+									.accessibilityValue(segment.fileURL.lastPathComponent)
+
 								if let text = segment.transcription?.text {
 									Text(text)
+										.accessibilityLabel("Transcription")
+										.accessibilityValue(text)
 								} else if segment.isUploaded {
 									Text("🚀 Transcribing...").foregroundColor(.blue)
+										.accessibilityLabel("Transcription in progress")
 								} else {
 									Text("⏳ Pending upload").foregroundColor(.orange)
+										.accessibilityLabel("Pending upload")
 								}
 							}
 							.padding(.vertical, 4)
@@ -93,6 +112,7 @@ struct RecordingSessionSheet: View {
 						Text("No segments recorded yet.")
 							.font(.footnote)
 							.foregroundColor(.gray)
+							.accessibilityLabel("No segments recorded yet")
 					}
 				}
 			}
@@ -104,6 +124,8 @@ struct RecordingSessionSheet: View {
 						onDone()
 						logger.info("Closed sheet with Done.")
 					}
+					.accessibilityLabel("Done")
+					.accessibilityHint("Finish and close the recording screen.")
 				}
 				ToolbarItem(placement: .navigationBarTrailing) {
 					Button {
@@ -118,6 +140,8 @@ struct RecordingSessionSheet: View {
 					} label: {
 						Image(systemName: "xmark")
 					}
+					.accessibilityLabel("Close recording")
+					.accessibilityHint("Discard or exit the recording session.")
 				}
 			}
 			.alert("Discard this recording?", isPresented: $confirmCancelRecording) {
@@ -142,7 +166,7 @@ struct RecordingSessionSheet: View {
 			}
 		}
 	}
-	
+
 	private func stopTimer() {
 		timer?.invalidate()
 		timer = nil
@@ -154,3 +178,4 @@ struct RecordingSessionSheet: View {
 		return String(format: "%02d:%02d", minutes, seconds)
 	}
 }
+
