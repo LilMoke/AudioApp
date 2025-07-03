@@ -1,5 +1,5 @@
 //
-//  Double+AudioApp.swift
+//  Int+AudioApp.swift
 //  AudioApp
 //
 //  Created by Tony Scamurra on 7/2/25.
@@ -7,8 +7,8 @@
 
 import Foundation
 
-extension Double {
-	func nonZeroOr(_ fallback: Double) -> Double {
+extension Int {
+	func nonZeroOr(_ fallback: Int) -> Int {
 		self != 0 ? self : fallback
 	}
 }

@@ -12,7 +12,10 @@ import SwiftData
 struct AudioAppApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+			RecordingSession.self,
+			AudioSegment.self,
+			Transcription.self,
+			Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
