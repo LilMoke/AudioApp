@@ -1,5 +1,5 @@
 //
-//  MyAudioLevelBar.swift
+//  ScrollingWaveform.swift
 //  AudioApp
 //
 //  Created by Tony Scamurra on 7/2/25.
@@ -10,6 +10,24 @@ import os
 
 private let logger = Logger(subsystem: "AudioApp.AudioManager", category: "Waveform")
 
+/// A live scrolling audio waveform view similiar to iOS Voice Memos
+///
+/// `ScrollingWaveform` displays a horizontal row of animated bars that represent
+/// audio input levels, simulating a waveform line in the iOS Voice Memos App. As new
+/// `level` values arrive they push existing bars to the left, creating the scrolling effect
+///
+/// The waveform height changes with animation and also highlights
+/// bars in orange when exceeding a certain threshold.
+///
+/// - Parameters:
+///   - level: A `Float` from `0.0` to `1.0` representing the normalized
+///     audio input level from the microphone
+///
+/// ## Example Usage
+/// ```swift
+/// ScrollingWaveform(level: audioManager.inputLevel)
+///     .frame(height: 50)
+/// ```
 struct ScrollingWaveform: View {
 	var level: Float // 0.0 to 1.0
 

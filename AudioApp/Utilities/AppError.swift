@@ -8,6 +8,33 @@
 import Foundation
 import os
 
+/// For use in SwiftUI alerts and logging
+///
+/// `AppError` wraps any Swift `Error` into a uniform structure, capturing its domain, code,
+/// and user-friendly message. It also conforms to `Identifiable` for SwiftUI and `CustomStringConvertible`
+/// to make logging easy
+///
+/// - Properties:
+///   - id: A unique identifier
+///   - domain: Domain of the error from `NSError.domain`
+///   - code: Error code from `NSError.code`
+///   - message: The human-readable description of the error
+///
+/// - Usage:
+///   You can initialize it directly from any `Error`, or create one manually with a domain, code and message
+///   The static `handle` helper logs the error and assigns it into a binding, to be used with `@State`
+///   to drive an alert in the UI
+///
+/// - Example:
+///   ```swift
+///   @State private var activeError: AppError?
+///
+///   do {
+///       try someFunctionThatThrows()
+///   } catch {
+///       AppError.handle(error, into: &activeError, logger: logger)
+///   }
+///   ```
 struct AppError: Identifiable, CustomStringConvertible {
 	let id = UUID()
 	let domain: String

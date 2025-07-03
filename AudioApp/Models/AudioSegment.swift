@@ -8,6 +8,18 @@
 import Foundation
 import SwiftData
 
+/// Class use to hold a single recorded audio segmen
+///
+/// Keeps track of the file path, duration, transcription result, and upload state
+/// Automatically computes the `fileURL` from the stored path
+///
+/// - Properties:
+///   - id: Unique identifier for the segment
+///   - filePath: Local file system path where the audio is located
+///   - duration: Length of the audio in seconds
+///   - transcription: Ttranscription data for ther segment
+///   - isUploaded: Indicates whether the segment has been uploaded or not
+///   - fileURL: Convenience computed URL from `filePath` because we cannot stroe a URL in SwiftData
 @Model
 class AudioSegment {
 	@Attribute(.unique) var id: UUID

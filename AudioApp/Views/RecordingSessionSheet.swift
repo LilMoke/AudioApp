@@ -13,8 +13,10 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "AudioApp
 
 struct RecordingSessionSheet: View {
 	@Environment(\.modelContext) private var context
+
 	@Bindable var audioManager: AudioManager
-	var onClose: (Bool) -> Void // true = discard confirmed
+
+	var onClose: (Bool) -> Void // true = discard confirmed - deletes all segments and session
 	var onDone: () -> Void
 
 	@State private var recordingTime: TimeInterval = 0

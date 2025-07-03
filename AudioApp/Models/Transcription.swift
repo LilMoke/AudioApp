@@ -8,6 +8,14 @@
 import Foundation
 import SwiftData
 
+/// Model for a transcription
+///
+/// Stores the transcribed text, a confidence score and the timestamp when the transcription was created
+///
+/// - Properties:
+///   - text: Transcribed text from speech recognition.
+///   - confidence: A numeric confidence level for the transcription
+///   - created: The date and time when this transcription was created
 @Model
 class Transcription {
 	var text: String
@@ -20,27 +28,3 @@ class Transcription {
 		self.created = created
 	}
 }
-
-@MainActor
-class TranscriptionModel: ObservableObject {
-	private let transcriptionService: TranscriptionServiceProtocol = AppleSpeechRecognizerService()
-	
-	@Published var transcriptionResult: String?
-	@Published var isTranscribing: Bool = false
-	@Published var errorMessage: String?
-
-	func transcribeAudioSegment(_ url: URL) {
-		let transcriptionService = self.transcriptionService // capture safely
-		Task {
-			isTranscribing = true
-			do {
-				let text = try await transcriptionService.transcribeAudioFile(url: url)
-				transcriptionResult = text
-			} catch {
-				errorMessage = "Failed: \(error.localizedDescription)"
-			}
-			isTranscribing = false
-		}
-	}
-}
-

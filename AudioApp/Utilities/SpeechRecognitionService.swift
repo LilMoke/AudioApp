@@ -12,6 +12,12 @@ import os
 // Logger for this file
 private let logger = Logger(subsystem: "AudioApp", category: "TranscriptionService")
 
+/// A protocol for defineing a common interface for audio transcription services like
+/// AppleSpeechRecognizerService and the OpenAI Whisper Service as per requirement
+///
+/// Type that conform to the protocol provide an async function that takes a local audio file URL
+/// and then returns transcribed text or it will throw and error if it fails. This enables swapping
+/// between different local or remote transcription implementations as per the requirement
 protocol TranscriptionServiceProtocol {
 	func transcribeAudioFile(url: URL) async throws -> String
 }
