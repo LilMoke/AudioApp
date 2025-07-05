@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-/// Call used to hold a recording session of multiple segments
+/// Class used to hold a recording session of multiple segments
 ///
 /// This model groups together the audio segments recorded in a session and
 /// tracks the date, and allowsfor  optional user notes

@@ -42,7 +42,8 @@ private let logger = Logger(subsystem: "AudioApp", category: "AudioManager")
 ///   playback later.
 ///
 @Observable
-class AudioManager {
+class AudioManager: Identifiable {
+	var id: ObjectIdentifier { ObjectIdentifier(self) }
 	// Audio session/engine
 	private var audioEngine: AVAudioEngine
 	private var audioSession: AVAudioSession

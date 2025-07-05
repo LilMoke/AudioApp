@@ -47,6 +47,7 @@ struct SessionDetailView: View {
 										Image(systemName: "play.circle")
 											.font(.title2)
 									}
+									.buttonStyle(.borderless)
 									.accessibilityLabel("Play audio file \(segment.fileURL.lastPathComponent)")
 
 									Button(role: .destructive) {
@@ -56,6 +57,7 @@ struct SessionDetailView: View {
 										Image(systemName: "trash")
 											.font(.title2)
 									}
+									.buttonStyle(.borderless)
 									.accessibilityLabel("Delete audio file \(segment.fileURL.lastPathComponent)")
 								}
 							}

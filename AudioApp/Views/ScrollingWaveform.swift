@@ -43,7 +43,7 @@ struct ScrollingWaveform: View {
 						.frame(width: 3, height: max(4, bars[index]))
 				}
 			}
-			.frame(height: maxHeight)
+			.frame(maxWidth: .infinity, maxHeight: maxHeight)
 			.onChange(of: level) { _, newLevel in
 				let newHeight = CGFloat(newLevel) * maxHeight * CGFloat.random(in: 0.8...1.2)
 				withAnimation(.easeOut(duration: 0.1)) {
@@ -51,7 +51,7 @@ struct ScrollingWaveform: View {
 					bars.removeFirst()
 				}
 				if newLevel > 0.8 {
-					logger.debug("🔊 ScrollingWaveform level spike: \(String(format: "%.2f", newLevel))")
+					logger.debug("ScrollingWaveform level spike: \(String(format: "%.2f", newLevel))")
 				}
 			}
 		}
@@ -59,8 +59,8 @@ struct ScrollingWaveform: View {
 	}
 
 	private func gradient(for height: CGFloat) -> LinearGradient {
-		let base = Color.green
-		let highlight = height > maxHeight * 0.7 ? Color.orange : base
+		let base = Color.white
+		let highlight = height > maxHeight * 0.4 ? .audioAppRed : base
 		return LinearGradient(
 			gradient: Gradient(colors: [highlight, base]),
 			startPoint: .bottom,

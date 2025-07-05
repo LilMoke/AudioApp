@@ -19,34 +19,35 @@ struct RecordingSessionSheet: View {
 	var onClose: (Bool) -> Void
 	var onDone: () -> Void
 
-	@State private var recordingTime: TimeInterval = 0
-	@State private var timer: Timer?
+	@State private var startTime: Date?
+	@State private var displayTimer: Timer?
+	@State private var currentElapsed: TimeInterval = 0
 	@State private var isPaused = false
 	@State private var confirmCancelRecording = false
 
 	var body: some View {
 		NavigationStack {
 			VStack(spacing: 20) {
-				Text(timeString(from: recordingTime))
+				Text(timeString(from: currentElapsed))
 					.font(.largeTitle.monospacedDigit())
 					.padding(.top)
 					.accessibilityLabel("Recording time")
-					.accessibilityValue("\(Int(recordingTime)) seconds elapsed")
+					.accessibilityValue("\(Int(currentElapsed)) seconds elapsed")
 
 				HStack(spacing: 30) {
 					Button {
 						if !audioManager.isRecording && !isPaused {
 							audioManager.startRecording()
-							startTimer()
+							startNewClock()
 							logger.info("Started recording.")
 						} else if audioManager.isRecording {
 							audioManager.pauseRecording()
-							stopTimer()
+							pauseClock()
 							isPaused = true
 							logger.info("Paused recording.")
 						} else if isPaused {
 							audioManager.resumeRecording()
-							startTimer()
+							resumeClock()
 							isPaused = false
 							logger.info("Resumed recording.")
 						}
@@ -68,7 +69,7 @@ struct RecordingSessionSheet: View {
 
 					Button {
 						audioManager.stopRecording()
-						stopTimer()
+						stopClock()
 						isPaused = false
 						logger.info("Stopped recording.")
 					} label: {
@@ -82,17 +83,22 @@ struct RecordingSessionSheet: View {
 
 				ScrollingWaveform(level: audioManager.inputLevel)
 					.frame(height: 50)
+					.frame(maxWidth: .infinity)
 					.padding(.horizontal)
+					.background(.audioAppGray)
 					.accessibilityLabel("Audio waveform level")
 
 				List {
 					if let segments = audioManager.currentSession?.segments, !segments.isEmpty {
-						ForEach(segments, id: \.id) { segment in
+						ForEach(Array(segments.enumerated()), id: \.element.id) { (index, segment) in
 							VStack(alignment: .leading) {
-								Text("File: \(segment.fileURL.lastPathComponent)")
+//								Text("File: \(segment.fileURL.lastPathComponent)")
+//									.font(.caption)
+//									.accessibilityLabel("Recorded file")
+//									.accessibilityValue(segment.fileURL.lastPathComponent)
+								Text("Segment #\(index + 1)")
 									.font(.caption)
-									.accessibilityLabel("Recorded file")
-									.accessibilityValue(segment.fileURL.lastPathComponent)
+									.accessibilityLabel("Recorded segment number \(index + 1)")
 
 								if let text = segment.transcription?.text {
 									Text(text)
@@ -120,7 +126,7 @@ struct RecordingSessionSheet: View {
 			.toolbar {
 				ToolbarItem(placement: .navigationBarLeading) {
 					Button("Done") {
-						stopTimer()
+						stopClock()
 						onDone()
 						logger.info("Closed sheet with Done.")
 					}
@@ -129,7 +135,7 @@ struct RecordingSessionSheet: View {
 				}
 				ToolbarItem(placement: .navigationBarTrailing) {
 					Button {
-						stopTimer()
+						stopClock()
 						if audioManager.currentSession?.segments.isEmpty ?? true {
 							onClose(true)
 							logger.info("Closed sheet without segments.")
@@ -158,24 +164,45 @@ struct RecordingSessionSheet: View {
 		}
 	}
 
-	private func startTimer() {
-		timer?.invalidate()
-		timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-			Task { @MainActor in
-				recordingTime += 1
-			}
-		}
+	// MARK: - Clock logic
+	private func startNewClock() {
+		startTime = Date()
+		startDisplayTimer()
 	}
 
-	private func stopTimer() {
-		timer?.invalidate()
-		timer = nil
+	private func resumeClock() {
+		if let pausedDuration = startTime.map({ Date().timeIntervalSince($0) }) {
+			startTime = Date().addingTimeInterval(-pausedDuration)
+		} else {
+			startTime = Date()
+		}
+		startDisplayTimer()
+	}
+
+	private func pauseClock() {
+		displayTimer?.invalidate()
+	}
+
+	private func stopClock() {
+		displayTimer?.invalidate()
+		displayTimer = nil
+	}
+
+	private func startDisplayTimer() {
+		displayTimer?.invalidate()
+		displayTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
+			Task { @MainActor in
+				if let start = startTime {
+					currentElapsed = Date().timeIntervalSince(start)
+				}
+			}
+		}
 	}
 
 	private func timeString(from interval: TimeInterval) -> String {
 		let minutes = Int(interval) / 60
 		let seconds = Int(interval) % 60
-		return String(format: "%02d:%02d", minutes, seconds)
+		let milliseconds = Int((interval.truncatingRemainder(dividingBy: 1)) * 1000)
+		return String(format: "%02d:%02d.%03d", minutes, seconds, milliseconds)
 	}
 }
-
