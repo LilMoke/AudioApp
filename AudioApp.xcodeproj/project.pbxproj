@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		DD54BF032E1937710095C5F2 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DD54BF022E1937710095C5F2 /* README.md */; };
+		DD54C0B12E1955770095C5F2 /* Known Issues.docx in Resources */ = {isa = PBXBuildFile; fileRef = DD54C0AF2E1955770095C5F2 /* Known Issues.docx */; };
+		DD54C0B22E1955770095C5F2 /* Audio System Design.docx in Resources */ = {isa = PBXBuildFile; fileRef = DD54C0AD2E1955770095C5F2 /* Audio System Design.docx */; };
+		DD54C0B32E1955770095C5F2 /* Architecture Document.docx in Resources */ = {isa = PBXBuildFile; fileRef = DD54C0AC2E1955770095C5F2 /* Architecture Document.docx */; };
+		DD54C0B42E1955770095C5F2 /* Data Model Design.docx in Resources */ = {isa = PBXBuildFile; fileRef = DD54C0AE2E1955770095C5F2 /* Data Model Design.docx */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +36,10 @@
 		DD54B9AC2E158AD80095C5F2 /* AudioAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD54B9B62E158AD80095C5F2 /* AudioAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD54BF022E1937710095C5F2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		DD54C0AC2E1955770095C5F2 /* Architecture Document.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Architecture Document.docx"; sourceTree = "<group>"; };
+		DD54C0AD2E1955770095C5F2 /* Audio System Design.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Audio System Design.docx"; sourceTree = "<group>"; };
+		DD54C0AE2E1955770095C5F2 /* Data Model Design.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Data Model Design.docx"; sourceTree = "<group>"; };
+		DD54C0AF2E1955770095C5F2 /* Known Issues.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Known Issues.docx"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -101,11 +109,12 @@
 		DD54B9932E158AD70095C5F2 = {
 			isa = PBXGroup;
 			children = (
-				DD54BF022E1937710095C5F2 /* README.md */,
 				DD54B99E2E158AD70095C5F2 /* AudioApp */,
 				DD54B9AF2E158AD80095C5F2 /* AudioAppTests */,
 				DD54B9B92E158AD80095C5F2 /* AudioAppUITests */,
+				DD54C0B02E1955770095C5F2 /* Documentation */,
 				DD54B99D2E158AD70095C5F2 /* Products */,
+				DD54BF022E1937710095C5F2 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -117,6 +126,17 @@
 				DD54B9B62E158AD80095C5F2 /* AudioAppUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DD54C0B02E1955770095C5F2 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				DD54C0AC2E1955770095C5F2 /* Architecture Document.docx */,
+				DD54C0AD2E1955770095C5F2 /* Audio System Design.docx */,
+				DD54C0AE2E1955770095C5F2 /* Data Model Design.docx */,
+				DD54C0AF2E1955770095C5F2 /* Known Issues.docx */,
+			);
+			path = Documentation;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -239,6 +259,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD54C0B12E1955770095C5F2 /* Known Issues.docx in Resources */,
+				DD54C0B22E1955770095C5F2 /* Audio System Design.docx in Resources */,
+				DD54C0B32E1955770095C5F2 /* Architecture Document.docx in Resources */,
+				DD54C0B42E1955770095C5F2 /* Data Model Design.docx in Resources */,
 				DD54BF032E1937710095C5F2 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

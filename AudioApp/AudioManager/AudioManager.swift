@@ -447,3 +447,22 @@ extension AudioManager {
 		startRecording()
 	}
 }
+
+// MARK: - Test Helpers
+#if DEBUG
+extension AudioManager {
+	func testOnlySetSegmentDuration(_ duration: TimeInterval) {
+		self.segmentDuration = duration
+	}
+
+	func testOnlyAccumulateSegment(buffer: AVAudioPCMBuffer, time: AVAudioTime) {
+		self.accumulateSegment(buffer: buffer, time: time)
+	}
+
+	func testOnlyTranscribeSegment(segmentID: UUID) async {
+		await self.transcribeSegment(segmentID: segmentID)
+	}
+}
+#endif
+
+
