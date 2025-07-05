@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DD54BF032E1937710095C5F2 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DD54BF022E1937710095C5F2 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		DD54B9AD2E158AD80095C5F2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		DD54B99C2E158AD70095C5F2 /* AudioApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD54B9AC2E158AD80095C5F2 /* AudioAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD54B9B62E158AD80095C5F2 /* AudioAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AudioAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD54BF022E1937710095C5F2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -96,6 +101,7 @@
 		DD54B9932E158AD70095C5F2 = {
 			isa = PBXGroup;
 			children = (
+				DD54BF022E1937710095C5F2 /* README.md */,
 				DD54B99E2E158AD70095C5F2 /* AudioApp */,
 				DD54B9AF2E158AD80095C5F2 /* AudioAppTests */,
 				DD54B9B92E158AD80095C5F2 /* AudioAppUITests */,
@@ -233,6 +239,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD54BF032E1937710095C5F2 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
