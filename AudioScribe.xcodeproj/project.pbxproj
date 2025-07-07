@@ -233,7 +233,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DD54B9972E158AD70095C5F2 /* Build configuration list for PBXProject "AudioScribeTest" */;
+			buildConfigurationList = DD54B9972E158AD70095C5F2 /* Build configuration list for PBXProject "AudioScribe" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -626,7 +626,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DD54B9972E158AD70095C5F2 /* Build configuration list for PBXProject "AudioScribeTest" */ = {
+		DD54B9972E158AD70095C5F2 /* Build configuration list for PBXProject "AudioScribe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DD54B9BE2E158AD80095C5F2 /* Debug */,

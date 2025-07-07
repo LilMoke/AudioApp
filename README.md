@@ -1,5 +1,5 @@
 
-# AudioApp
+# AudioScribe
 
 An iOS app that records audio in userc defined segments, transcribes them using OpenAI Whisper with local Apple Speech as a fallback method.  
 In the settings view there are configurable audios settings. In addition to transcribing the audio the user can optioanlly save the recordings securely on their device.
@@ -32,14 +32,14 @@ In the settings view there are configurable audios settings. In addition to tran
 
 ### Clone the repo
 ```bash
-git clone https://github.com/LilMoke/AudioApp
-cd AudioApp
+git clone https://github.com/LilMoke/AudioScribe
+cd AudioScribe
 ```
 
 ---
 
 ### Open in Xcode
-Double-click `AudioApp.xcodeproj`
+Double-click `AudioScribe.xcodeproj`
 
 ---
 

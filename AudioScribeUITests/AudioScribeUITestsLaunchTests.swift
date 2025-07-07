@@ -1,13 +1,13 @@
 //
-//  AudioAppUITestsLaunchTests.swift
-//  AudioAppUITests
+//  AudioScribeUITestsLaunchTests.swift
+//  AudioScribeUITests
 //
 //  Created by Tony Scamurra on 7/2/25.
 //
 
 import XCTest
 
-final class AudioAppUITestsLaunchTests: XCTestCase {
+final class AudioScribeUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

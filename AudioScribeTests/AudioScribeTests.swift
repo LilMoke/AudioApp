@@ -1,6 +1,6 @@
 //
-//  AudioAppTests.swift
-//  AudioAppTests
+//  AudioScribeTests.swift
+//  AudioScribeTests
 //
 //  Created by Tony Scamurra on 7/2/25.
 //
@@ -10,9 +10,9 @@ import XCTest
 import SwiftData
 import AVFAudio
 
-@testable import AudioApp
+@testable import AudioScribe
 
-final class AudioAppTests: XCTestCase {
+final class AudioScribeTests: XCTestCase {
 
 	// MARK: - Unit Tests
 
